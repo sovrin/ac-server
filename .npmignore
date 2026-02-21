@@ -1,0 +1,11 @@
+/.idea
+
+/coverage
+/node_modules
+/temp
+/test
+/doc
+
+package-lock.json
+.prettierrc
+*.tgz
