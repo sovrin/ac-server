@@ -2,18 +2,24 @@ import type { ContainerService } from '@app/container-service';
 import type { Generator, LoggerFactory } from '@app/ports';
 import type { WebSocket, WebSocketServer } from 'ws';
 
+import { ContainerEventTransportHandler } from '@infra/transport/ws/agent/handlers/container-event-handler';
+import { FullStateTransportHandler } from '@infra/transport/ws/agent/handlers/full-state-handler';
+import { AgentTransportMessageHandlerRegistry } from '@infra/transport/ws/agent/handlers/registry';
 import { AgentMessageSchema } from '@infra/transport/ws/protocol';
 
-import { ContainerEventTransportHandler } from './agent-handlers/container-event-handler';
-import { FullStateTransportHandler } from './agent-handlers/full-state-handler';
-import { AgentTransportMessageHandlerRegistry } from './agent-handlers/registry';
+type Setup = {
+    wss: WebSocketServer;
+    service: ContainerService;
+    idGenerator: Generator;
+    loggerFactory: LoggerFactory;
+};
 
-export const setupAgentWs = (
-    wss: WebSocketServer,
-    service: ContainerService,
-    idGenerator: Generator,
-    loggerFactory: LoggerFactory,
-): void => {
+export const setupAgentWs = ({
+    wss,
+    service,
+    idGenerator,
+    loggerFactory,
+}: Setup): void => {
     const log = loggerFactory.create('agent:ws');
     const handlerRegistry = new AgentTransportMessageHandlerRegistry([
         new FullStateTransportHandler(),

@@ -12,4 +12,9 @@ const service = new ContainerService({
     publisher: clientUpdatePublisher,
 });
 
-startServer(service, { port: env.PORT }, idGenerator, debugLoggerFactory);
+startServer({
+    idGenerator,
+    loggerFactory: debugLoggerFactory,
+    options: { port: env.PORT },
+    service,
+});

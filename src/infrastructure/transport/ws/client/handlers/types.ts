@@ -1,6 +1,6 @@
 import type { ClientUpdateMessage } from '@app/messages';
+import type { TransportClientMessage } from '@infra/transport/ws/client/protocol';
 import type { MessageHandler } from '@infra/transport/ws/handler-registry';
-import type { TransportClientMessage } from '@infra/transport/ws/protocol';
 
 export type ClientUpdateMessageType = ClientUpdateMessage['type'];
 

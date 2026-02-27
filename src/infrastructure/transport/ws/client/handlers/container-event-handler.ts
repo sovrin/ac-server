@@ -1,4 +1,4 @@
-import type { TransportClientMessage } from '@infra/transport/ws/protocol';
+import type { TransportClientMessage } from '@infra/transport/ws/client/protocol';
 
 import type {
     ClientTransportMessageHandler,

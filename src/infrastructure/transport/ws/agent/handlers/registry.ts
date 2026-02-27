@@ -1,5 +1,5 @@
 import type { AgentUpdateMessage } from '@app/messages';
-import type { TransportAgentMessage } from '@infra/transport/ws/protocol';
+import type { TransportAgentMessage } from '@infra/transport/ws/agent/protocol';
 
 import { MessageHandlerRegistry } from '@infra/transport/ws/handler-registry';
 

@@ -15,7 +15,12 @@ export const debug = (namespace: string): Debugger => {
 
     const elapsed = (): string => {
         const now = Date.now();
-        const diff = prevTime ? `+${now - prevTime}ms` : '+0ms';
+
+        let diff = '+0ms';
+        if (prevTime) {
+            diff = `+${now - prevTime}ms`;
+        }
+
         prevTime = now;
 
         return diff;

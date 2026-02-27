@@ -11,23 +11,32 @@ export type ServerOptions = {
     port: number;
 };
 
-export const startServer = (
-    service: ContainerService,
-    options: ServerOptions,
-    idGenerator: Generator,
-    loggerFactory: LoggerFactory,
-): void => {
+type Server = {
+    service: ContainerService;
+    options: ServerOptions;
+    idGenerator: Generator;
+    loggerFactory: LoggerFactory;
+};
+
+const HTTP_SUCCESS = 200;
+
+export const startServer = ({
+    service,
+    options,
+    idGenerator,
+    loggerFactory,
+}: Server): void => {
     const log = loggerFactory.create('server:ws');
     const httpServer = createServer((_req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.writeHead(HTTP_SUCCESS, { 'Content-Type': 'text/plain' });
         res.end('Docker Agent Server\n');
     });
 
     const agentWss = new WebSocketServer({ noServer: true });
     const clientWss = new WebSocketServer({ noServer: true });
 
-    setupAgentWs(agentWss, service, idGenerator, loggerFactory);
-    setupClientWs(clientWss, service, loggerFactory);
+    setupAgentWs({ idGenerator, loggerFactory, service, wss: agentWss });
+    setupClientWs({ loggerFactory, service, wss: clientWss });
 
     httpServer.on('upgrade', (req, socket, head) => {
         const url = new URL(req.url ?? '/', `http://${req.headers.host}`);

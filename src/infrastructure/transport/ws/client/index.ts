@@ -3,17 +3,18 @@ import type { ClientUpdateMessage } from '@app/messages';
 import type { LoggerFactory } from '@app/ports';
 
 import { onClientUpdate } from '@infra/messaging/client-update-bus';
+import { ContainerEventClientTransportHandler } from '@infra/transport/ws/client/handlers/container-event-handler';
+import { FullStateClientTransportHandler } from '@infra/transport/ws/client/handlers/full-state-handler';
+import { ClientTransportMessageHandlerRegistry } from '@infra/transport/ws/client/handlers/registry';
 import { WebSocket, type WebSocketServer } from 'ws';
 
-import { ContainerEventClientTransportHandler } from './client-handlers/container-event-handler';
-import { FullStateClientTransportHandler } from './client-handlers/full-state-handler';
-import { ClientTransportMessageHandlerRegistry } from './client-handlers/registry';
+type Setup = {
+    wss: WebSocketServer;
+    service: ContainerService;
+    loggerFactory: LoggerFactory;
+};
 
-export const setupClientWs = (
-    wss: WebSocketServer,
-    service: ContainerService,
-    loggerFactory: LoggerFactory,
-): void => {
+export const setupClientWs = ({ wss, service, loggerFactory }: Setup): void => {
     const log = loggerFactory.create('client:ws');
     const clients = new Set<WebSocket>();
     const handlerRegistry = new ClientTransportMessageHandlerRegistry([
@@ -34,8 +35,6 @@ export const setupClientWs = (
     });
 
     wss.on('connection', (ws: WebSocket) => {
-        log.log(`Client connected total=${clients.size + 1}`);
-
         clients.add(ws);
 
         const snapshots = service.getFullStateForAllAgents();
@@ -52,5 +51,7 @@ export const setupClientWs = (
         ws.on('error', (error) => {
             log.error(`Client error: ${error.message}`);
         });
+
+        log.log(`Client connected total=${clients.size}`);
     });
 };
