@@ -5,7 +5,7 @@ import type { WebSocket, WebSocketServer } from 'ws';
 import { ContainerEventTransportHandler } from '@infra/transport/ws/agent/handlers/container-event-handler';
 import { FullStateTransportHandler } from '@infra/transport/ws/agent/handlers/full-state-handler';
 import { AgentTransportMessageHandlerRegistry } from '@infra/transport/ws/agent/handlers/registry';
-import { AgentMessageSchema } from '@infra/transport/ws/protocol';
+import { AgentMessageSchema } from '@infra/transport/ws/agent/protocol';
 
 type Setup = {
     wss: WebSocketServer;
