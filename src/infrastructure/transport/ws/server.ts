@@ -1,4 +1,5 @@
 import type { ContainerService } from '@app/container-service';
+import type { LoggerFactory, Generator } from '@app/ports';
 
 import { createServer } from 'node:http';
 import { WebSocketServer } from 'ws';
@@ -6,14 +7,17 @@ import { WebSocketServer } from 'ws';
 import { setupAgentWs } from './agent';
 import { setupClientWs } from './client';
 
-export interface ServerOptions {
+export type ServerOptions = {
     port: number;
-}
+};
 
 export const startServer = (
     service: ContainerService,
     options: ServerOptions,
+    idGenerator: Generator,
+    loggerFactory: LoggerFactory,
 ): void => {
+    const log = loggerFactory.create('server:ws');
     const httpServer = createServer((_req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('Docker Agent Server\n');
@@ -22,8 +26,8 @@ export const startServer = (
     const agentWss = new WebSocketServer({ noServer: true });
     const clientWss = new WebSocketServer({ noServer: true });
 
-    setupAgentWs(agentWss, service);
-    setupClientWs(clientWss, service);
+    setupAgentWs(agentWss, service, idGenerator, loggerFactory);
+    setupClientWs(clientWss, service, loggerFactory);
 
     httpServer.on('upgrade', (req, socket, head) => {
         const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
@@ -48,12 +52,8 @@ export const startServer = (
     });
 
     httpServer.listen(options.port, () => {
-        console.log(`[server] Listening on port ${options.port}`);
-        console.log(
-            `[server]   Agents  → ws://localhost:${options.port}/agent?id=<name>`,
-        );
-        console.log(
-            `[server]   Clients → ws://localhost:${options.port}/client`,
-        );
+        log.log(`Listening on port ${options.port}`);
+        log.log(`Agents  → ws://localhost:${options.port}/agent?id=<name>`);
+        log.log(`Clients → ws://localhost:${options.port}/client`);
     });
 };

@@ -1,71 +1,54 @@
 import type { ContainerService } from '@app/container-service';
-import type { AgentUpdateMessage } from '@app/messages';
+import type { Generator, LoggerFactory } from '@app/ports';
 import type { WebSocket, WebSocketServer } from 'ws';
 
-import {
-    AgentMessageSchema,
-    type AgentMessage as TransportAgentMessage,
-} from '@infra/schemas';
+import { AgentMessageSchema } from '@infra/transport/ws/protocol';
 
-const mapAgentMessage = (
-    message: TransportAgentMessage,
-): AgentUpdateMessage => {
-    switch (message.type) {
-        case 'full_state':
-            return {
-                containers: message.containers.map((container) => ({
-                    ...container,
-                })),
-                timestamp: message.timestamp,
-                type: 'full_state',
-            };
-
-        case 'container_event':
-            return {
-                container: { ...message.container },
-                event: message.event,
-                timestamp: message.timestamp,
-                type: 'container_event',
-            };
-    }
-};
+import { ContainerEventTransportHandler } from './agent-handlers/container-event-handler';
+import { FullStateTransportHandler } from './agent-handlers/full-state-handler';
+import { AgentTransportMessageHandlerRegistry } from './agent-handlers/registry';
 
 export const setupAgentWs = (
     wss: WebSocketServer,
     service: ContainerService,
+    idGenerator: Generator,
+    loggerFactory: LoggerFactory,
 ): void => {
+    const log = loggerFactory.create('agent:ws');
+    const handlerRegistry = new AgentTransportMessageHandlerRegistry([
+        new FullStateTransportHandler(),
+        new ContainerEventTransportHandler(),
+    ]);
+
     wss.on('connection', (ws: WebSocket, req) => {
         const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
         const agentId =
-            url.searchParams.get('id') ??
-            `agent-${Math.random().toString(36).substring(2, 8)}`;
+            url.searchParams.get('id') ?? `agent-${idGenerator.id()}`;
 
-        console.log(`[agent][ws] Agent connected: ${agentId}`);
+        log.log(`Agent connected "${agentId}"`);
 
         ws.on('message', (raw) => {
             try {
                 const json = JSON.parse(raw.toString());
                 const message = AgentMessageSchema.parse(json);
-                service.handleAgentMessage(agentId, mapAgentMessage(message));
-            } catch (error) {
-                console.error(
-                    `[agent][ws] Invalid message from ${agentId}:`,
-                    error instanceof Error ? error.message : error,
+
+                service.handleAgentMessage(
+                    agentId,
+                    handlerRegistry.handle(message),
                 );
+            } catch (error) {
+                log.error(`Invalid message from "${agentId}": %s`, error);
             }
         });
 
         ws.on('close', () => {
-            console.log(`[agent][ws] Agent disconnected: ${agentId}`);
+            log.log(`Agent disconnected "${agentId}"`);
 
-            // Service.removeAgent(agentId);
+            service.removeAgent(agentId);
         });
 
         ws.on('error', (error) => {
-            console.error(
-                `[agent][ws] Agent error: ${agentId}:`,
-                error instanceof Error ? error.message : error,
-            );
+            log.error(`Agent error "${agentId}": %s`, error);
         });
     });
 };

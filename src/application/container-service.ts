@@ -1,54 +1,42 @@
 import type { AgentUpdateMessage, ClientUpdateMessage } from '@app/messages';
+import type {
+    ClientUpdatePublisher,
+    Clock,
+    Logger,
+    LoggerFactory,
+} from '@app/ports';
 
-import { publishClientUpdate } from '@app/client-updates';
-import { ContainerRegistry } from '@domain/container-registry';
+import { ContainerEventAgentMessageHandler } from '@app/agent-message-handlers/container-event-handler';
+import { FullStateAgentMessageHandler } from '@app/agent-message-handlers/full-state-handler';
+import { AgentMessageHandlerRegistry } from '@app/agent-message-handlers/registry';
+import { ContainerRegistry } from '@domain/container/registry';
 
 export class ContainerService {
     private registries = new Map<string, ContainerRegistry>();
+    private readonly logger: Logger;
+    private readonly clock: Clock;
+    private readonly handlerRegistry: AgentMessageHandlerRegistry;
+
+    constructor(deps: {
+        publisher: ClientUpdatePublisher;
+        logger: LoggerFactory;
+        clock: Clock;
+    }) {
+        this.logger = deps.logger.create('service');
+        this.clock = deps.clock;
+        this.handlerRegistry = new AgentMessageHandlerRegistry([
+            new FullStateAgentMessageHandler(deps.publisher, {
+                logger: this.logger,
+            }),
+            new ContainerEventAgentMessageHandler(deps.publisher, {
+                logger: this.logger,
+            }),
+        ]);
+    }
 
     handleAgentMessage(agentId: string, message: AgentUpdateMessage): void {
         const registry = this.getOrCreateRegistry(agentId);
-
-        switch (message.type) {
-            case 'full_state': {
-                registry.replaceAll(message.containers);
-
-                const outbound: ClientUpdateMessage = {
-                    agentId,
-                    containers: registry.getAll(),
-                    timestamp: message.timestamp,
-                    type: 'full_state',
-                };
-
-                console.log(
-                    `[service] Agent "${agentId} full state: ${registry.size} containers"`,
-                );
-
-                publishClientUpdate(outbound);
-
-                break;
-            }
-
-            case 'container_event': {
-                registry.applyEvent(message.event, message.container);
-
-                const outbound: ClientUpdateMessage = {
-                    agentId,
-                    container: message.container,
-                    event: message.event,
-                    timestamp: message.timestamp,
-                    type: 'container_event',
-                };
-
-                console.log(
-                    `[service] Agent "${agentId}" event: ${message.event} -> ${message.container.name}`,
-                );
-
-                publishClientUpdate(outbound);
-
-                break;
-            }
-        }
+        this.handlerRegistry.handle(agentId, registry, message);
     }
 
     getFullStateForAllAgents(): ClientUpdateMessage[] {
@@ -58,7 +46,7 @@ export class ContainerService {
             messages.push({
                 agentId,
                 containers: registry.getAll(),
-                timestamp: Date.now(),
+                timestamp: this.clock.now(),
                 type: 'full_state',
             });
         }
@@ -68,7 +56,7 @@ export class ContainerService {
 
     removeAgent(agentId: string): void {
         this.registries.delete(agentId);
-        console.log(`[service] Agent "${agentId}" removed.`);
+        this.logger.log(`Agent "${agentId}" removed.`);
     }
 
     private getOrCreateRegistry(agentId: string): ContainerRegistry {

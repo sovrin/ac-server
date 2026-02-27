@@ -1,4 +1,4 @@
-import type { ContainerSnapshot } from '@contracts/container';
+import type { ContainerSnapshot } from '@domain/container/types';
 
 export type AgentUpdateMessage =
     | {

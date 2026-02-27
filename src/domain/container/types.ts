@@ -1,11 +1,11 @@
-export interface PortBinding {
+export type PortBinding = {
     containerPort: number;
     protocol: string;
     hostIp?: string;
     hostPort?: number;
-}
+};
 
-export interface ContainerSnapshot {
+export type ContainerSnapshot = {
     id: string;
     name: string;
     state: string;
@@ -17,4 +17,4 @@ export interface ContainerSnapshot {
     labels: Record<string, string>;
     ports: PortBinding[];
     healthStatus?: string;
-}
+};

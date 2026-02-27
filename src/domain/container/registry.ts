@@ -1,6 +1,6 @@
-import type { ContainerSnapshot } from '@contracts/container';
+import type { ContainerSnapshot } from '@domain/container/types';
 
-import { Container } from '@domain/container';
+import { Container } from '@domain/container/index';
 
 export class ContainerRegistry {
     private containers = new Map<string, Container>();
@@ -29,7 +29,9 @@ export class ContainerRegistry {
     }
 
     getAll(): ContainerSnapshot[] {
-        return Array.from(this.containers.values()).map((c) => c.toSnapshot());
+        return Array.from(this.containers.values()).map((container) =>
+            container.toSnapshot(),
+        );
     }
 
     get size(): number {

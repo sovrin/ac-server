@@ -1,40 +1,24 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@app/*": [
-        "src/application/*"
-      ],
-      "@domain/*": [
-        "src/domain/*"
-      ],
-      "@infra/*": [
-        "src/infrastructure/*"
-      ],
-      "@contracts/*": [
-        "src/contracts/*"
-      ]
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"],
+            "@app/*": ["src/application/*"],
+            "@domain/*": ["src/domain/*"],
+            "@infra/*": ["src/infrastructure/*"]
+        },
+        "rootDir": "./",
+        "strict": true,
+        "removeComments": false,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true
     },
-    "rootDir": "./",
-    "strict": true,
-    "removeComments": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
 }

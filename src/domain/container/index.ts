@@ -1,4 +1,4 @@
-import type { ContainerSnapshot } from '@contracts/container';
+import type { ContainerSnapshot } from '@domain/container/types';
 
 export class Container {
     readonly id: string;
@@ -11,14 +11,6 @@ export class Container {
 
     get name(): string {
         return this._data.name;
-    }
-
-    get state(): string {
-        return this._data.state;
-    }
-
-    get labels(): Record<string, string> {
-        return this._data.labels;
     }
 
     update(data: ContainerSnapshot): void {

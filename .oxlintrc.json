@@ -1,39 +1,38 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript"
-  ],
-  "categories": {
-    "correctness": "error",
-    "suspicious": "warn",
-    "pedantic": "warn",
-    "perf": "warn",
-    "style": "warn"
-  },
-  "rules": {
-    "@typescript-eslint/consistent-type-imports": "error",
-    "no-continue": "off",
-    "sort-imports": "off",
-    "import/order": "off"
-  },
-  "settings": {
-    "jsdoc": {
-      "ignorePrivate": false,
-      "ignoreInternal": false,
-      "ignoreReplacesDocs": true,
-      "overrideReplacesDocs": true,
-      "augmentsExtendsReplacesDocs": false,
-      "implementsReplacesDocs": false,
-      "exemptDestructuredRootsFromChecks": false,
-      "tagNamePreference": {}
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["typescript"],
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn",
+        "pedantic": "warn",
+        "perf": "warn",
+        "style": "warn"
     },
-    "vitest": {
-      "typecheck": false
-    }
-  },
-  "env": {
-    "builtin": true
-  },
-  "globals": {},
-  "ignorePatterns": []
+    "rules": {
+        "@typescript-eslint/consistent-type-imports": "error",
+        "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+        "no-continue": "off",
+        "sort-imports": "off",
+        "import/order": "off"
+    },
+    "settings": {
+        "jsdoc": {
+            "ignorePrivate": false,
+            "ignoreInternal": false,
+            "ignoreReplacesDocs": true,
+            "overrideReplacesDocs": true,
+            "augmentsExtendsReplacesDocs": false,
+            "implementsReplacesDocs": false,
+            "exemptDestructuredRootsFromChecks": false,
+            "tagNamePreference": {}
+        },
+        "vitest": {
+            "typecheck": false
+        }
+    },
+    "env": {
+        "builtin": true
+    },
+    "globals": {},
+    "ignorePatterns": []
 }
